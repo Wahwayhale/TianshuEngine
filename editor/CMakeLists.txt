@@ -3,6 +3,7 @@ set(EDITOR_SOURCES
     core/editor_state.cpp
     core/command_system.cpp
     core/entity_picker.cpp
+    core/gizmo.cpp
     panels/viewport_panel.cpp
     panels/inspector_panel.cpp
     panels/scene_hierarchy_panel.cpp
