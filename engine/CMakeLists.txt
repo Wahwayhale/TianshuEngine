@@ -30,9 +30,11 @@ set(ENGINE_SOURCES
     physics/joint.cpp
     physics/vehicle.cpp
     physics/debug_draw.cpp
+    physics/cloth.cpp
 
     # Renderer
     renderer/volumetric.cpp
+    renderer/terrain_system.cpp
 
     # Resource
     resource/resource_manager.cpp

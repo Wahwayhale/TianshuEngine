@@ -15,6 +15,7 @@ set(EDITOR_SOURCES
     panels/ai_panel.cpp
     panels/material_editor_panel.cpp
     panels/animation_editor_panel.cpp
+    panels/profiler_panel.cpp
 )
 
 add_executable(SparkEditor ${EDITOR_SOURCES})
