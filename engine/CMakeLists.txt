@@ -38,6 +38,7 @@ set(ENGINE_SOURCES
     renderer/terrain_system.cpp
     renderer/deferred_pipeline.cpp
     renderer/global_illumination.cpp
+    renderer/ray_tracing.cpp
 
     # Resource
     resource/resource_manager.cpp

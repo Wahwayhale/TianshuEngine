@@ -16,6 +16,8 @@ set(EDITOR_SOURCES
     panels/material_editor_panel.cpp
     panels/animation_editor_panel.cpp
     panels/profiler_panel.cpp
+    panels/terrain_editor_panel.cpp
+    panels/ui_editor_panel.cpp
     visual_script/visual_script.cpp
 )
 
