@@ -25,32 +25,17 @@ jobs:
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Configure
-      run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
-
-    - name: Build
-      run: cmake --build build --config Release
-
-    - name: Create Release Package
+    - name: Configure and Build
       run: |
-        mkdir -p release/TianshuEngine
-        if (Test-Path build/editor/Release/SparkEditor.exe) {
-          cp build/editor/Release/SparkEditor.exe release/TianshuEngine/
-        }
-        if (Test-Path build/runtime/Release/SparkRuntime.exe) {
-          cp build/runtime/Release/SparkRuntime.exe release/TianshuEngine/
-        }
-        cp -r assets release/TianshuEngine/
-        cp -r examples release/TianshuEngine/
-        cp README.md release/TianshuEngine/
-        cp CHANGELOG.md release/TianshuEngine/
-        cp LICENSE release/TianshuEngine/
+        cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+        cmake --build build --config Release
 
-    - name: Upload Windows Build
+    - name: Upload Build
       uses: actions/upload-artifact@v4
+      if: success()
       with:
-        name: tianshu-engine-windows
-        path: release/TianshuEngine/
+        name: windows-build
+        path: build/**/Release/*.exe
 
   build-linux:
     name: Build Linux
@@ -71,8 +56,6 @@ jobs:
           libxinerama-dev \
           libxcursor-dev \
           libxi-dev \
-          libwayland-dev \
-          libxkbcommon-dev \
           ninja-build
 
     - name: Setup Vulkan SDK
@@ -81,26 +64,14 @@ jobs:
         vulkan-version: 1.3.268.0
         cache: true
 
-    - name: Configure
-      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-
-    - name: Build
-      run: cmake --build build
-
-    - name: Create Release Package
+    - name: Configure and Build
       run: |
-        mkdir -p release/TianshuEngine
-        cp build/editor/SparkEditor release/TianshuEngine/ 2>/dev/null || true
-        cp build/runtime/SparkRuntime release/TianshuEngine/ 2>/dev/null || true
-        chmod +x release/TianshuEngine/*
-        cp -r assets release/TianshuEngine/
-        cp -r examples release/TianshuEngine/
-        cp README.md release/TianshuEngine/
-        cp CHANGELOG.md release/TianshuEngine/
-        cp LICENSE release/TianshuEngine/
+        cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        cmake --build build
 
-    - name: Upload Linux Build
+    - name: Upload Build
       uses: actions/upload-artifact@v4
+      if: success()
       with:
-        name: tianshu-engine-linux
-        path: release/TianshuEngine/
+        name: linux-build
+        path: build/**/Spark*

@@ -44,21 +44,22 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(tinygltf)
 
 # Create interface library for stb
-add_library(stb INTERFACE)
-target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
+add_library(stb_lib INTERFACE)
+target_include_directories(stb_lib INTERFACE ${stb_SOURCE_DIR})
 
 # Create interface library for tinygltf
-add_library(tinygltf INTERFACE)
-target_include_directories(tinygltf INTERFACE ${tinygltf_SOURCE_DIR})
-target_compile_definitions(tinygltf INTERFACE TINYGLTF_IMPLEMENTATION STB_IMAGE_IMPLEMENTATION STB_IMAGE_WRITE_IMPLEMENTATION)
+add_library(tinygltf_lib INTERFACE)
+target_include_directories(tinygltf_lib INTERFACE ${tinygltf_SOURCE_DIR})
+target_compile_definitions(tinygltf_lib INTERFACE TINYGLTF_IMPLEMENTATION STB_IMAGE_IMPLEMENTATION STB_IMAGE_WRITE_IMPLEMENTATION)
 
 # Jolt Physics - Physics Engine
 set(JPH_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(JPH_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
 set(JPH_DEBUG_RENDERER OFF CACHE BOOL "" FORCE)
+set(JPH_OBJECT_STREAM OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     jolt
     GIT_REPOSITORY https://github.com/jrouwe/JoltPhysics.git
-    GIT_TAG v5.1.0
+    GIT_TAG v5.0.0
 )
 FetchContent_MakeAvailable(jolt)

@@ -92,8 +92,8 @@ target_link_libraries(SparkEngine
         glfw
         glm::glm
         spdlog::spdlog
-        stb
-        tinygltf
+        stb_lib
+        tinygltf_lib
         Jolt
 )
 
