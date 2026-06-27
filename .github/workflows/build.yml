@@ -1,0 +1,177 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    name: Windows Build
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Vulkan SDK
+      uses: humbletim/setup-vulkan-sdk@v1.2
+      with:
+        vulkan-version: 1.3.268.0
+        cache: true
+
+    - name: Configure
+      run: cmake --preset windows-release
+
+    - name: Build
+      run: cmake --build --preset windows-release --config Release
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-build
+        path: |
+          build/windows-release/editor/Release/SparkEditor.exe
+          build/windows-release/runtime/Release/SparkRuntime.exe
+
+  build-linux:
+    name: Linux Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libvulkan-dev \
+          libx11-dev \
+          libxrandr-dev \
+          libxinerama-dev \
+          libxcursor-dev \
+          libxi-dev \
+          libwayland-dev \
+          libxkbcommon-dev \
+          ninja-build
+
+    - name: Setup Vulkan SDK
+      uses: humbletim/setup-vulkan-sdk@v1.2
+      with:
+        vulkan-version: 1.3.268.0
+        cache: true
+
+    - name: Configure
+      run: cmake --preset linux-release
+
+    - name: Build
+      run: cmake --build --preset linux-release
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-build
+        path: |
+          build/linux-release/editor/SparkEditor
+          build/linux-release/runtime/SparkRuntime
+
+  build-macos:
+    name: macOS Build
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Dependencies
+      run: |
+        brew install vulkan-sdk ninja
+
+    - name: Configure
+      run: |
+        cmake -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -B build/macos-release
+
+    - name: Build
+      run: cmake --build build/macos-release
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-build
+        path: |
+          build/macos-release/editor/SparkEditor
+          build/macos-release/runtime/SparkRuntime
+
+  lint:
+    name: Code Linting
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install clang-tidy
+      run: sudo apt-get install -y clang-tidy
+
+    - name: Run clang-tidy
+      run: |
+        find engine -name "*.cpp" -o -name "*.h" | head -20 | \
+          xargs clang-tidy -p build/
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Doxygen
+      run: sudo apt-get install -y doxygen graphviz
+
+    - name: Generate Documentation
+      run: doxygen Doxyfile
+
+    - name: Upload Documentation
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation
+        path: docs/html/
+
+  release:
+    name: Create Release
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download Windows Build
+      uses: actions/download-artifact@v4
+      with:
+        name: windows-build
+        path: release/windows/
+
+    - name: Download Linux Build
+      uses: actions/download-artifact@v4
+      with:
+        name: linux-build
+        path: release/linux/
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          release/windows/*
+          release/linux/*
+        draft: true
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

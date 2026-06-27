@@ -1,0 +1,102 @@
+# Doxyfile for Spark Engine
+
+# Project settings
+PROJECT_NAME           = "Spark Engine"
+PROJECT_NUMBER         = "0.25.0"
+PROJECT_BRIEF          = "A modern 3D game engine built with C++20 and Vulkan 1.3"
+PROJECT_LOGO           = ""
+
+# Input settings
+INPUT                  = engine \
+                         editor \
+                         runtime
+INPUT_ENCODING         = UTF-8
+FILE_PATTERNS          = *.h \
+                         *.hpp \
+                         *.cpp \
+                         *.md
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */third_party/* \
+                         */build/* \
+                         */.git/*
+
+# Output settings
+OUTPUT_DIRECTORY       = docs
+CREATE_SUBDIRS         = YES
+OUTPUT_LANGUAGE        = English
+
+# HTML settings
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_FILE_EXTENSION    = .html
+HTML_COLORSTYLE        = YES
+HTML_DYNAMIC_SECTIONS  = YES
+GENERATE_TREEVIEW      = YES
+TREEVIEW_WIDTH         = 250
+SEARCHENGINE           = YES
+SERVER_BASED_SEARCH    = NO
+
+# LaTeX settings
+GENERATE_LATEX         = NO
+
+# Markdown settings
+MARKDOWN_SUPPORT       = YES
+AUTOLINK_SUPPORT       = YES
+
+# Preprocessing
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = NO
+SEARCH_INCLUDES        = YES
+
+# Source browsing
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = YES
+STRIP_CODE_COMMENTS    = YES
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+VERBATIM_HEADERS       = YES
+
+# Graph settings
+HAVE_DOT               = YES
+DOT_NUM_THREADS        = 4
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+GROUP_GRAPHS           = YES
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+GRAPHICAL_HIERARCHY    = YES
+DIRECTORY_GRAPH        = YES
+DOT_IMAGE_FORMAT       = svg
+INTERACTIVE_SVG        = YES
+
+# Warnings
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = YES
+WARN_FORMAT            = "$file:$line: $text"
+
+# Alphabetical index
+ALPHABETICAL_INDEX     = YES
+
+# Examples
+EXAMPLE_PATH           = examples
+EXAMPLE_RECURSIVE      = YES
+
+# Various
+GENERATE_TODOLIST      = YES
+GENERATE_TESTLIST      = YES
+GENERATE_BUGLIST       = YES
+GENERATE_DEPRECATEDLIST = YES
+SHOW_USED_FILES        = YES
+SHOW_FILES             = YES
+SHOW_NAMESPACES        = YES
+
+# Custom commands
+ALIASES += "note=\xrefitem note \"Note\" \"Notes\""
+ALIASES += "warning=\xrefitem warning \"Warning\" \"Warnings\""
+ALIASES += "bug=\xrefitem bug \"Bug\" \"Bugs\""
+ALIASES += "deprecated=\xrefitem deprecated \"Deprecated\" \"Deprecated List\""
+ALIASES += "todo=\xrefitem todo \"Todo\" \"Todo List\""
