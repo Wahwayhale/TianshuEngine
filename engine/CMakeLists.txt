@@ -31,10 +31,13 @@ set(ENGINE_SOURCES
     physics/vehicle.cpp
     physics/debug_draw.cpp
     physics/cloth.cpp
+    physics/destruction.cpp
 
     # Renderer
     renderer/volumetric.cpp
     renderer/terrain_system.cpp
+    renderer/deferred_pipeline.cpp
+    renderer/global_illumination.cpp
 
     # Resource
     resource/resource_manager.cpp
