@@ -95,6 +95,7 @@ target_link_libraries(SparkEngine
         stb_lib
         tinygltf_lib
         Jolt
+        imgui_lib
 )
 
 # Platform specific
