@@ -15,6 +15,8 @@ set(ENGINE_SOURCES
     renderer/buffer.cpp
     renderer/mesh.cpp
     renderer/camera.cpp
+    renderer/material.cpp
+    renderer/light.cpp
 
     # ECS
     ecs/entity.cpp
@@ -22,6 +24,14 @@ set(ENGINE_SOURCES
     # Scene
     scene/scene.cpp
     scene/transform.cpp
+
+    # Physics
+    physics/jolt_physics.cpp
+    physics/joint.cpp
+
+    # Resource
+    resource/resource_manager.cpp
+    resource/asset_pipeline.cpp
 
     # UI
     ui/ui_system.cpp
