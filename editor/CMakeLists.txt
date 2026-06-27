@@ -13,6 +13,7 @@ set(EDITOR_SOURCES
     panels/console_panel.cpp
     panels/settings_panel.cpp
     panels/ai_panel.cpp
+    panels/material_editor_panel.cpp
 )
 
 add_executable(SparkEditor ${EDITOR_SOURCES})
