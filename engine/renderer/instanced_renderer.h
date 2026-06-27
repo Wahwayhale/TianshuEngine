@@ -1,77 +1,69 @@
 #pragma once
 
-#include "math/math_types.h"
+#include <vulkan/vulkan.h>
 #include <vector>
 #include <memory>
-#include <vulkan/vulkan.h>
+#include "math/math_types.h"
 
 namespace spark {
 
 class Device;
 class Buffer;
 class Mesh;
-class Pipeline;
+class Material;
 
+// 实例数据
 struct InstanceData {
     Mat4 transform;
     Vec4 color;
+    float metallic;
+    float roughness;
+    float ao;
+    float padding;
 };
 
+// 实例批次
+struct InstanceBatch {
+    std::shared_ptr<Mesh> mesh;
+    std::shared_ptr<Material> material;
+    std::vector<InstanceData> instances;
+    std::unique_ptr<Buffer> instanceBuffer;
+    uint32_t instanceCount = 0;
+    bool dirty = true;
+};
+
+// 实例化渲染器
 class InstancedRenderer {
 public:
-    InstancedRenderer(Device& device, std::shared_ptr<Mesh> mesh, uint32_t maxInstances = 1000);
+    InstancedRenderer(Device& device);
     ~InstancedRenderer();
 
-    void addInstance(const InstanceData& data);
+    // 添加实例
+    void addInstance(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material,
+                     const Mat4& transform, const Vec4& color = Vec4(1.0f),
+                     float metallic = 0.0f, float roughness = 0.5f, float ao = 1.0f);
+
+    // 清除所有实例
     void clearInstances();
-    void updateBuffer();
 
-    void draw(VkCommandBuffer commandBuffer, Pipeline& pipeline);
+    // 渲染所有实例
+    void render(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t frameIndex);
 
-    uint32_t getInstanceCount() const { return static_cast<uint32_t>(m_instances.size()); }
-    uint32_t getMaxInstances() const { return m_maxInstances; }
-
-private:
-    Device& m_device;
-    std::shared_ptr<Mesh> m_mesh;
-    std::unique_ptr<Buffer> m_instanceBuffer;
-    std::vector<InstanceData> m_instances;
-    uint32_t m_maxInstances;
-    bool m_bufferDirty = true;
-};
-
-// Batch renderer for efficient instanced rendering
-class BatchRenderer {
-public:
-    BatchRenderer(Device& device);
-    ~BatchRenderer();
-
-    // Begin a new batch
-    void beginBatch();
-
-    // Add an instance to the current batch
-    void addInstance(std::shared_ptr<Mesh> mesh, const InstanceData& data);
-
-    // End the batch and prepare for rendering
-    void endBatch();
-
-    // Draw all batches
-    void draw(VkCommandBuffer commandBuffer, Pipeline& pipeline);
-
-    // Statistics
-    uint32_t getBatchCount() const { return static_cast<uint32_t>(m_batches.size()); }
-    uint32_t getTotalInstances() const { return m_totalInstances; }
+    // 获取统计
+    int getInstanceCount() const { return m_totalInstances; }
+    int getBatchCount() const { return static_cast<int>(m_batches.size()); }
+    int getDrawCalls() const { return static_cast<int>(m_batches.size()); }
 
 private:
-    struct Batch {
-        std::shared_ptr<Mesh> mesh;
-        std::vector<InstanceData> instances;
-        std::unique_ptr<Buffer> instanceBuffer;
-    };
+    void updateInstanceBuffers();
 
     Device& m_device;
-    std::vector<Batch> m_batches;
-    uint32_t m_totalInstances = 0;
+
+    // 实例批次（按材质和网格分组）
+    std::vector<InstanceBatch> m_batches;
+
+    // 统计
+    int m_totalInstances = 0;
 };
 
 } // namespace spark

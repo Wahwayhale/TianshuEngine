@@ -4,6 +4,7 @@ set(ENGINE_SOURCES
     core/window.cpp
     core/input.cpp
     core/application.cpp
+    core/memory_allocator.cpp
 
     # Renderer
     renderer/vulkan/instance.cpp
@@ -32,6 +33,7 @@ set(ENGINE_SOURCES
     physics/debug_draw.cpp
     physics/cloth.cpp
     physics/destruction.cpp
+    physics/spatial_partition.cpp
 
     # Renderer
     renderer/volumetric.cpp
@@ -39,6 +41,8 @@ set(ENGINE_SOURCES
     renderer/deferred_pipeline.cpp
     renderer/global_illumination.cpp
     renderer/ray_tracing.cpp
+    renderer/culling.cpp
+    renderer/instanced_renderer.cpp
 
     # Resource
     resource/resource_manager.cpp
