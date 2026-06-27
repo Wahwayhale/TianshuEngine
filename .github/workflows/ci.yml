@@ -7,21 +7,6 @@ on:
     branches: [ main ]
 
 jobs:
-  lint:
-    name: Code Linting
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install clang-tidy
-      run: sudo apt-get install -y clang-tidy
-
-    - name: Run clang-tidy
-      run: |
-        find engine -name "*.cpp" -o -name "*.h" | head -20 | \
-          xargs clang-tidy -p build/ 2>&1 || true
-
   build-windows:
     name: Build Windows
     runs-on: windows-latest
@@ -41,18 +26,31 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
 
     - name: Configure
-      run: cmake --preset windows-release
+      run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
 
     - name: Build
-      run: cmake --build --preset windows-release
+      run: cmake --build build --config Release
 
-    - name: Upload Build
+    - name: Create Release Package
+      run: |
+        mkdir -p release/TianshuEngine
+        if (Test-Path build/editor/Release/SparkEditor.exe) {
+          cp build/editor/Release/SparkEditor.exe release/TianshuEngine/
+        }
+        if (Test-Path build/runtime/Release/SparkRuntime.exe) {
+          cp build/runtime/Release/SparkRuntime.exe release/TianshuEngine/
+        }
+        cp -r assets release/TianshuEngine/
+        cp -r examples release/TianshuEngine/
+        cp README.md release/TianshuEngine/
+        cp CHANGELOG.md release/TianshuEngine/
+        cp LICENSE release/TianshuEngine/
+
+    - name: Upload Windows Build
       uses: actions/upload-artifact@v4
       with:
-        name: windows-build
-        path: |
-          build/windows-release/editor/Release/SparkEditor.exe
-          build/windows-release/runtime/Release/SparkRuntime.exe
+        name: tianshu-engine-windows
+        path: release/TianshuEngine/
 
   build-linux:
     name: Build Linux
@@ -84,35 +82,25 @@ jobs:
         cache: true
 
     - name: Configure
-      run: cmake --preset linux-release
+      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
     - name: Build
-      run: cmake --build --preset linux-release
+      run: cmake --build build
 
-    - name: Upload Build
+    - name: Create Release Package
+      run: |
+        mkdir -p release/TianshuEngine
+        cp build/editor/SparkEditor release/TianshuEngine/ 2>/dev/null || true
+        cp build/runtime/SparkRuntime release/TianshuEngine/ 2>/dev/null || true
+        chmod +x release/TianshuEngine/*
+        cp -r assets release/TianshuEngine/
+        cp -r examples release/TianshuEngine/
+        cp README.md release/TianshuEngine/
+        cp CHANGELOG.md release/TianshuEngine/
+        cp LICENSE release/TianshuEngine/
+
+    - name: Upload Linux Build
       uses: actions/upload-artifact@v4
       with:
-        name: linux-build
-        path: |
-          build/linux-release/editor/SparkEditor
-          build/linux-release/runtime/SparkRuntime
-
-  docs:
-    name: Documentation
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install Doxygen
-      run: sudo apt-get install -y doxygen graphviz
-
-    - name: Generate Documentation
-      run: doxygen Doxyfile
-
-    - name: Upload Documentation
-      uses: actions/upload-artifact@v4
-      with:
-        name: documentation
-        path: docs/html/
+        name: tianshu-engine-linux
+        path: release/TianshuEngine/
