@@ -28,6 +28,11 @@ set(ENGINE_SOURCES
     # Physics
     physics/jolt_physics.cpp
     physics/joint.cpp
+    physics/vehicle.cpp
+    physics/debug_draw.cpp
+
+    # Renderer
+    renderer/volumetric.cpp
 
     # Resource
     resource/resource_manager.cpp
