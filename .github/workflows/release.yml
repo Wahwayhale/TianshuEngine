@@ -30,21 +30,16 @@ jobs:
         cmake -S . -B build -G "Visual Studio 17 2022" -A x64
         cmake --build build --config Release
 
-    - name: Create Release Package
+    - name: Package Engine
       run: |
-        mkdir -p release/TianshuEngine
-        Get-ChildItem -Path build -Filter "*.exe" -Recurse | Where-Object { $_.FullName -like "*Release*" } | Copy-Item -Destination release/TianshuEngine/
-        Copy-Item -Path assets -Destination release/TianshuEngine/ -Recurse
-        Copy-Item -Path examples -Destination release/TianshuEngine/ -Recurse
-        Copy-Item -Path README.md -Destination release/TianshuEngine/
-        Copy-Item -Path CHANGELOG.md -Destination release/TianshuEngine/
-        Copy-Item -Path LICENSE -Destination release/TianshuEngine/
+        .\scripts\package_engine.bat ${{ github.ref_name }} windows
+      shell: cmd
 
     - name: Upload Windows Build
       uses: actions/upload-artifact@v4
       with:
         name: tianshu-engine-windows
-        path: release/TianshuEngine/
+        path: release/*.zip
 
   build-linux:
     name: Build Linux
@@ -74,21 +69,39 @@ jobs:
         cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
         cmake --build build
 
-    - name: Create Release Package
+    - name: Package Engine
       run: |
-        mkdir -p release/TianshuEngine
-        find build -name "Spark*" -executable -exec cp {} release/TianshuEngine/ \;
-        cp -r assets release/TianshuEngine/
-        cp -r examples release/TianshuEngine/
-        cp README.md release/TianshuEngine/
-        cp CHANGELOG.md release/TianshuEngine/
-        cp LICENSE release/TianshuEngine/
+        VERSION=${{ github.ref_name }}
+        PLATFORM=linux
+        PKG_DIR="release/TianshuEngine-${VERSION}-${PLATFORM}"
+
+        mkdir -p "$PKG_DIR"/{bin,lib,include,assets/shaders,examples,docs,templates/src}
+
+        # Copy headers
+        cp -r engine/core/*.h "$PKG_DIR/include/core/" 2>/dev/null || true
+        cp -r engine/renderer/*.h "$PKG_DIR/include/renderer/" 2>/dev/null || true
+        cp -r engine/ecs/*.h "$PKG_DIR/include/ecs/" 2>/dev/null || true
+        cp -r engine/scene/*.h "$PKG_DIR/include/scene/" 2>/dev/null || true
+        cp -r engine/math/*.h "$PKG_DIR/include/math/" 2>/dev/null || true
+        cp -r engine/physics/*.h "$PKG_DIR/include/physics/" 2>/dev/null || true
+
+        # Copy shaders
+        cp -r assets/shaders/* "$PKG_DIR/assets/shaders/" 2>/dev/null || true
+
+        # Copy examples
+        cp -r examples/* "$PKG_DIR/examples/" 2>/dev/null || true
+
+        # Copy docs
+        cp README.md CHANGELOG.md LICENSE "$PKG_DIR/" 2>/dev/null || true
+
+        # Create zip
+        cd release && zip -r "TianshuEngine-${VERSION}-${PLATFORM}.zip" "TianshuEngine-${VERSION}-${PLATFORM}"
 
     - name: Upload Linux Build
       uses: actions/upload-artifact@v4
       with:
         name: tianshu-engine-linux
-        path: release/TianshuEngine/
+        path: release/*.zip
 
   create-release:
     name: Create Release
@@ -101,27 +114,36 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: tianshu-engine-windows
-        path: windows/
+        path: downloads/
 
     - name: Download Linux Build
       uses: actions/download-artifact@v4
       with:
         name: tianshu-engine-linux
-        path: linux/
-
-    - name: Create Archives
-      run: |
-        cd windows && zip -r ../TianshuEngine-${{ github.ref_name }}-Windows.zip . && cd ..
-        cd linux && tar -czf ../TianshuEngine-${{ github.ref_name }}-Linux.tar.gz . && cd ..
+        path: downloads/
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        files: |
-          TianshuEngine-${{ github.ref_name }}-Windows.zip
-          TianshuEngine-${{ github.ref_name }}-Linux.tar.gz
+        files: downloads/*.zip
         draft: false
         prerelease: false
         generate_release_notes: true
+        body: |
+          # 天枢引擎 ${{ github.ref_name }}
+
+          ## 下载
+          - Windows: `TianshuEngine-${{ github.ref_name }}-windows.zip`
+          - Linux: `TianshuEngine-${{ github.ref_name }}-linux.zip`
+
+          ## 快速开始
+          1. 下载对应平台的压缩包
+          2. 解压到任意目录
+          3. 参考 `QUICKSTART.md` 开始开发
+
+          ## 系统要求
+          - Vulkan SDK 1.3+
+          - CMake 3.20+
+          - Visual Studio 2022 (Windows) 或 GCC 12+ (Linux)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
