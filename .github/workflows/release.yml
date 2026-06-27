@@ -17,34 +17,28 @@ jobs:
         submodules: recursive
 
     - name: Setup Vulkan SDK
-      uses: humbletim/setup-vulkan-sdk@v1.2
-      with:
-        vulkan-version: 1.3.268.0
-        cache: true
+      run: |
+        Invoke-WebRequest -Uri "https://sdk.lunarg.com/sdk/download/1.3.268.0/windows/VulkanSDK-1.3.268.0-Installer.exe" -OutFile "$env:TEMP\VulkanSDK.exe"
+        Start-Process -FilePath "$env:TEMP\VulkanSDK.exe" -ArgumentList "--accept-licenses --default-answer --confirm-command install" -Wait
+        echo "VULKAN_SDK=C:\VulkanSDK\1.3.268.0" >> $env:GITHUB_ENV
 
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Configure
-      run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
-
-    - name: Build
-      run: cmake --build build --config Release
+    - name: Configure and Build
+      run: |
+        cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+        cmake --build build --config Release
 
     - name: Create Release Package
       run: |
         mkdir -p release/TianshuEngine
-        if (Test-Path build/editor/Release/SparkEditor.exe) {
-          cp build/editor/Release/SparkEditor.exe release/TianshuEngine/
-        }
-        if (Test-Path build/runtime/Release/SparkRuntime.exe) {
-          cp build/runtime/Release/SparkRuntime.exe release/TianshuEngine/
-        }
-        cp -r assets release/TianshuEngine/
-        cp -r examples release/TianshuEngine/
-        cp README.md release/TianshuEngine/
-        cp CHANGELOG.md release/TianshuEngine/
-        cp LICENSE release/TianshuEngine/
+        Get-ChildItem -Path build -Filter "*.exe" -Recurse | Where-Object { $_.FullName -like "*Release*" } | Copy-Item -Destination release/TianshuEngine/
+        Copy-Item -Path assets -Destination release/TianshuEngine/ -Recurse
+        Copy-Item -Path examples -Destination release/TianshuEngine/ -Recurse
+        Copy-Item -Path README.md -Destination release/TianshuEngine/
+        Copy-Item -Path CHANGELOG.md -Destination release/TianshuEngine/
+        Copy-Item -Path LICENSE -Destination release/TianshuEngine/
 
     - name: Upload Windows Build
       uses: actions/upload-artifact@v4
@@ -71,28 +65,24 @@ jobs:
           libxinerama-dev \
           libxcursor-dev \
           libxi-dev \
-          libwayland-dev \
-          libxkbcommon-dev \
           ninja-build
 
     - name: Setup Vulkan SDK
-      uses: humbletim/setup-vulkan-sdk@v1.2
-      with:
-        vulkan-version: 1.3.268.0
-        cache: true
+      run: |
+        wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+        sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.268-jammy.list https://packages.lunarg.com/vulkan/1.3.268/lunarg-vulkan-1.3.268-jammy.list
+        sudo apt-get update
+        sudo apt-get install -y vulkan-sdk
 
-    - name: Configure
-      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-
-    - name: Build
-      run: cmake --build build
+    - name: Configure and Build
+      run: |
+        cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        cmake --build build
 
     - name: Create Release Package
       run: |
         mkdir -p release/TianshuEngine
-        cp build/editor/SparkEditor release/TianshuEngine/ 2>/dev/null || true
-        cp build/runtime/SparkRuntime release/TianshuEngine/ 2>/dev/null || true
-        chmod +x release/TianshuEngine/*
+        find build -name "Spark*" -executable -exec cp {} release/TianshuEngine/ \;
         cp -r assets release/TianshuEngine/
         cp -r examples release/TianshuEngine/
         cp README.md release/TianshuEngine/
@@ -105,45 +95,9 @@ jobs:
         name: tianshu-engine-linux
         path: release/TianshuEngine/
 
-  build-macos:
-    name: Build macOS
-    runs-on: macos-latest
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    - name: Install Dependencies
-      run: |
-        brew install vulkan-sdk ninja
-
-    - name: Configure
-      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-
-    - name: Build
-      run: cmake --build build
-
-    - name: Create Release Package
-      run: |
-        mkdir -p release/TianshuEngine
-        cp build/editor/SparkEditor release/TianshuEngine/ 2>/dev/null || true
-        cp build/runtime/SparkRuntime release/TianshuEngine/ 2>/dev/null || true
-        cp -r assets release/TianshuEngine/
-        cp -r examples release/TianshuEngine/
-        cp README.md release/TianshuEngine/
-        cp CHANGELOG.md release/TianshuEngine/
-        cp LICENSE release/TianshuEngine/
-
-    - name: Upload macOS Build
-      uses: actions/upload-artifact@v4
-      with:
-        name: tianshu-engine-macos
-        path: release/TianshuEngine/
-
   create-release:
     name: Create Release
-    needs: [build-windows, build-linux, build-macos]
+    needs: [build-windows, build-linux]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
 
@@ -160,17 +114,10 @@ jobs:
         name: tianshu-engine-linux
         path: linux/
 
-    - name: Download macOS Build
-      uses: actions/download-artifact@v4
-      with:
-        name: tianshu-engine-macos
-        path: macos/
-
     - name: Create Archives
       run: |
         cd windows && zip -r ../TianshuEngine-${{ github.ref_name }}-Windows.zip . && cd ..
         cd linux && tar -czf ../TianshuEngine-${{ github.ref_name }}-Linux.tar.gz . && cd ..
-        cd macos && zip -r ../TianshuEngine-${{ github.ref_name }}-macOS.zip . && cd ..
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
@@ -178,7 +125,6 @@ jobs:
         files: |
           TianshuEngine-${{ github.ref_name }}-Windows.zip
           TianshuEngine-${{ github.ref_name }}-Linux.tar.gz
-          TianshuEngine-${{ github.ref_name }}-macOS.zip
         draft: false
         prerelease: false
         generate_release_notes: true
