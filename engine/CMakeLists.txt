@@ -55,6 +55,13 @@ set(ENGINE_SOURCES
     ui/widgets.cpp
     ui/imgui_integration.cpp
 
+    # AI
+    ai/ai_manager.cpp
+    ai/ai_code_generator.cpp
+    ai/ai_asset_generator.cpp
+    ai/behavior_tree.cpp
+    ai/navigation.cpp
+
     # Math
     math/math_types.cpp
 )
