@@ -66,6 +66,8 @@ set(ENGINE_SOURCES
     renderer/bloom.cpp
     renderer/terrain_renderer.cpp
     renderer/atmosphere.cpp
+    renderer/cloud_renderer.cpp
+    renderer/volumetric_fog.cpp
 
     # Resource
     resource/resource_manager.cpp
