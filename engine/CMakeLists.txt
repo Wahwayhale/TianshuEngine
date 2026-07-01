@@ -72,6 +72,7 @@ set(ENGINE_SOURCES
     renderer/hair_renderer.cpp
     renderer/skin_renderer.cpp
     renderer/glass_renderer.cpp
+    renderer/vegetation_renderer.cpp
 
     # Resource
     resource/resource_manager.cpp
