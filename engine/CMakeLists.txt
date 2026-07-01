@@ -57,6 +57,8 @@ set(ENGINE_SOURCES
     renderer/deferred_renderer.cpp
     renderer/skeletal_mesh.cpp
     renderer/light_probe.cpp
+    renderer/water_renderer.cpp
+    renderer/reflection_probe.cpp
 
     # Resource
     resource/resource_manager.cpp
