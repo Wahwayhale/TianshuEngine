@@ -48,6 +48,7 @@ set(ENGINE_SOURCES
     renderer/instanced_renderer.cpp
     renderer/shader_compiler.cpp
     renderer/texture_manager.cpp
+    renderer/render_graph.cpp
 
     # Resource
     resource/resource_manager.cpp
