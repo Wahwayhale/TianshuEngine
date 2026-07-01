@@ -4,6 +4,7 @@ set(EDITOR_SOURCES
     content_browser.cpp
     editor_selection.cpp
     material_editor.cpp
+    animation_editor.cpp
 )
 
 add_executable(SparkEditor ${EDITOR_SOURCES})

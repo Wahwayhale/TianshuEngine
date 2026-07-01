@@ -49,6 +49,7 @@ set(ENGINE_SOURCES
     renderer/shader_compiler.cpp
     renderer/texture_manager.cpp
     renderer/render_graph.cpp
+    renderer/gpu_particles.cpp
 
     # Resource
     resource/resource_manager.cpp
