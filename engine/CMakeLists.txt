@@ -27,6 +27,7 @@ set(ENGINE_SOURCES
     scene/scene.cpp
     scene/transform.cpp
     scene/scene_serializer.cpp
+    scene/prefab.cpp
 
     # Physics
     physics/jolt_physics.cpp
@@ -37,6 +38,7 @@ set(ENGINE_SOURCES
     physics/destruction.cpp
     physics/spatial_partition.cpp
     physics/physics_material.cpp
+    physics/ragdoll.cpp
 
     # Renderer Advanced
     renderer/volumetric.cpp
@@ -50,6 +52,8 @@ set(ENGINE_SOURCES
     renderer/texture_manager.cpp
     renderer/render_graph.cpp
     renderer/gpu_particles.cpp
+    renderer/font_renderer.cpp
+    renderer/sprite_renderer.cpp
 
     # Resource
     resource/resource_manager.cpp
@@ -59,6 +63,7 @@ set(ENGINE_SOURCES
     ui/ui_system.cpp
     ui/widgets.cpp
     ui/imgui_integration.cpp
+    ui/ui_canvas.cpp
 
     # AI
     ai/ai_manager.cpp
@@ -66,6 +71,7 @@ set(ENGINE_SOURCES
     ai/ai_asset_generator.cpp
     ai/behavior_tree.cpp
     ai/navigation.cpp
+    ai/decision_tree.cpp
 
     # Math
     math/math_types.cpp
