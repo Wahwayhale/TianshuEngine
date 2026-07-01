@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include "math/math_types.h"
+#include "ecs/entity.h"
 
 namespace spark {
 

@@ -28,7 +28,7 @@ public:
         );
 
         // ========== 后处理系统 ==========
-        m_postProcess = std::make_unique<PostProcess>(
+        m_postProcess = std::make_unique<PostProcessSystem>(
             m_renderer->getDevice(),
             m_renderer->getSwapchainFormat(),
             getWindow().getWidth(),
@@ -503,7 +503,7 @@ private:
 
     // 渲染器
     std::unique_ptr<Renderer> m_renderer;
-    std::unique_ptr<PostProcess> m_postProcess;
+    std::unique_ptr<PostProcessSystem> m_postProcess;
     std::unique_ptr<ShadowMap> m_shadowMap;
 
     // 管线

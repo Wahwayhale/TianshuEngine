@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math/math_types.h"
+#include "ecs/entity.h"
 #include <string>
 #include <vector>
 #include <functional>

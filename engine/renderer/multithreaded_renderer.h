@@ -1,3 +1,4 @@
+#include "vulkan/fwd.h"
 #pragma once
 
 #include <vulkan/vulkan.h>
@@ -11,7 +12,7 @@
 
 namespace spark {
 
-class Device;
+
 
 struct RenderCommand {
     std::function<void(VkCommandBuffer)> execute;

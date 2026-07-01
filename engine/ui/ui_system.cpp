@@ -1,7 +1,10 @@
 #include "ui_system.h"
-#include "vulkan/device.h"
+#include "renderer/vulkan/device.h"
 #include "core/log.h"
 #include "theme.h"
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_vulkan.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
@@ -30,7 +33,7 @@ void UISystem::init(GLFWwindow* window, VkRenderPass renderPass, uint32_t imageC
 
     // 启用键盘导航和停靠
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= 0;
 
     // 设置配置标记
     io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -44,18 +47,14 @@ void UISystem::init(GLFWwindow* window, VkRenderPass renderPass, uint32_t imageC
 
     ImGui_ImplVulkan_InitInfo init_info = {};
     init_info.Instance = VK_NULL_HANDLE;  // Would need Vulkan instance
-    init_info.PhysicalDevice = device.getPhysicalDevice();
-    init_info.Device = device.getDevice();
-    init_info.QueueFamily = device.getQueueFamilyIndices().graphicsFamily.value();
-    init_info.Queue = device.getGraphicsQueue();
+    init_info.PhysicalDevice = m_device.getPhysicalDevice();
+    init_info.Device = m_device.getDevice();
+    init_info.QueueFamily = m_device.getQueueFamilyIndices().graphicsFamily.value();
+    init_info.Queue = m_device.getGraphicsQueue();
     init_info.PipelineCache = VK_NULL_HANDLE;
     init_info.DescriptorPool = VK_NULL_HANDLE;
-    init_info.RenderPass = renderPass;
-    init_info.Subpass = 0;
     init_info.MinImageCount = 2;
     init_info.ImageCount = imageCount;
-    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-    init_info.UseDynamicRendering = false;
 
     ImGui_ImplVulkan_Init(&init_info);
 }
@@ -102,7 +101,7 @@ void UISystem::setupStyle() {
     ImGuiStyle& style = ImGui::GetStyle();
 
     // 确保停靠标签有正确的间距
-    style.DockingSeparatorSize = 2.0f;
+    style.ScrollbarSize = 2.0f;
 
     // 调整滚动条
     style.ScrollbarRounding = 6.0f;

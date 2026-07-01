@@ -1,5 +1,5 @@
 #include "model.h"
-#include "vulkan/device.h"
+#include "renderer/vulkan/device.h"
 #include "core/log.h"
 #include <tiny_gltf.h>
 #include <stdexcept>

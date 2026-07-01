@@ -1,9 +1,10 @@
+#include "vulkan/fwd.h"
 #pragma once
 
 #include <memory>
 #include <vulkan/vulkan.h>
 #include "vulkan/instance.h"
-#include "vulkan/device.h"
+#include "renderer/vulkan/device.h"
 #include "vulkan/swapchain.h"
 
 struct GLFWwindow;
@@ -22,12 +23,16 @@ public:
     void onResize(int width, int height);
 
     vulkan::Device& getDevice() { return *m_device; }
+    VkInstance getInstance() const;
     VkRenderPass getRenderPass() const { return m_renderPass; }
     VkCommandBuffer getCurrentCommandBuffer() const { return m_commandBuffers[m_currentFrame]; }
     uint32_t getCurrentFrame() const { return m_currentFrame; }
     uint32_t getImageIndex() const { return m_imageIndex; }
     VkExtent2D getSwapchainExtent() const { return m_swapchain->getExtent(); }
     VkCommandPool getCommandPool() const { return m_commandPool; }
+    uint32_t getSwapchainImageCount() const { return static_cast<uint32_t>(m_framebuffers.size()); }
+    VkImageView getSwapchainImageView(uint32_t index) const;
+    VkFramebuffer getCurrentFramebuffer() const { return m_framebuffers[m_imageIndex]; }
 
 private:
     void createSurface(GLFWwindow* window);

@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "ecs/components.h"
 
 namespace spark {
 

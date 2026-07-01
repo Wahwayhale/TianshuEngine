@@ -6,9 +6,13 @@
 
 struct GLFWwindow;
 
+namespace spark::vulkan {
+class Device;
+}
+
 namespace spark {
 
-class Device;
+using Device = vulkan::Device;
 
 class UISystem {
 public:

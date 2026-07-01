@@ -2,7 +2,7 @@
 #include "renderer/texture.h"
 #include "renderer/mesh.h"
 #include "renderer/model.h"
-#include "vulkan/device.h"
+#include "renderer/vulkan/device.h"
 #include "core/log.h"
 #include <tiny_gltf.h>
 

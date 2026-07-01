@@ -1,3 +1,4 @@
+#include "vulkan/fwd.h"
 #pragma once
 
 #include <vulkan/vulkan.h>
@@ -6,7 +7,7 @@
 
 namespace spark {
 
-class Device;
+
 class Buffer;
 
 // 体积雾设置

@@ -1,5 +1,5 @@
 #include "mesh.h"
-#include "vulkan/device.h"
+#include "renderer/vulkan/device.h"
 
 namespace spark {
 

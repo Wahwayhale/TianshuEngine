@@ -256,7 +256,7 @@ void* Platform::loadLibrary(const std::string& path) {
 
 void* Platform::getSymbol(void* library, const std::string& name) {
 #ifdef PLATFORM_WINDOWS
-    return GetProcAddress(static_cast<HMODULE>(library), name.c_str());
+    return (void*)GetProcAddress(static_cast<HMODULE>(library), name.c_str());
 #elif defined(PLATFORM_LINUX) || defined(PLATFORM_MACOS)
     return dlsym(library, name.c_str());
 #else

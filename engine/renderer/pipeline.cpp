@@ -1,7 +1,7 @@
 #include "pipeline.h"
 #include "shader.h"
 #include "descriptor_set.h"
-#include "vulkan/device.h"
+#include "renderer/vulkan/device.h"
 #include "core/log.h"
 #include <stdexcept>
 
@@ -61,16 +61,23 @@ void Pipeline::createPipeline(const std::vector<std::shared_ptr<Shader>>& shader
         shaderStages.push_back(shaderStageInfo);
     }
 
-    // Vertex input - 根据是否使用 PBR 顶点格式
-    VkVertexInputBindingDescription bindingDescription;
-    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions;
+    // Vertex input
+    VkVertexInputBindingDescription bindingDescription{};
+    bindingDescription.binding = 0;
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 
     if (usePBRVertex) {
-        bindingDescription = PBRVertex::getBindingDescription();
-        attributeDescriptions = PBRVertex::getAttributeDescriptions();
+        bindingDescription.stride = sizeof(PBRVertex);
+        attributeDescriptions[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(PBRVertex, position)};
+        attributeDescriptions[1] = {0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(PBRVertex, normal)};
+        attributeDescriptions[2] = {0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(PBRVertex, texCoord)};
     } else {
-        bindingDescription = Vertex::getBindingDescription();
-        attributeDescriptions = Vertex::getAttributeDescriptions();
+        bindingDescription.stride = sizeof(Vertex);
+        attributeDescriptions[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)};
+        attributeDescriptions[1] = {0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)};
+        attributeDescriptions[2] = {0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, texCoord)};
     }
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};

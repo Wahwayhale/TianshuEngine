@@ -1,3 +1,4 @@
+#include "vulkan/fwd.h"
 #pragma once
 
 #include "math/math_types.h"
@@ -8,7 +9,7 @@
 
 namespace spark {
 
-class Device;
+
 class Texture;
 
 struct TerrainConfig {

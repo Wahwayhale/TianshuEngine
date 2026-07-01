@@ -7,19 +7,33 @@
 #include <variant>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 namespace spark {
 
-// JSON-like value type
-using JsonValue = std::variant<
-    std::nullptr_t,
-    bool,
-    int64_t,
-    double,
-    std::string,
-    std::vector<JsonValue>,
-    std::unordered_map<std::string, JsonValue>
->;
+// JSON-like value type (using shared_ptr for recursive structure)
+struct JsonValue;
+using JsonValuePtr = std::shared_ptr<JsonValue>;
+
+struct JsonValue {
+    enum Type {
+        Null,
+        Bool,
+        Int,
+        Float,
+        String,
+        Array,
+        Object
+    };
+
+    Type type = Null;
+    bool boolValue = false;
+    int64_t intValue = 0;
+    double floatValue = 0.0;
+    std::string stringValue;
+    std::vector<JsonValuePtr> arrayValue;
+    std::unordered_map<std::string, JsonValuePtr> objectValue;
+};
 
 class Serializer {
 public:
@@ -28,54 +42,21 @@ public:
 
     // Serialization
     std::string serialize(const JsonValue& value);
-    bool serializeToFile(const JsonValue& value, const std::string& filepath);
 
     // Deserialization
     JsonValue deserialize(const std::string& json);
-    JsonValue deserializeFromFile(const std::string& filepath);
 
-    // Helper functions for common types
-    static JsonValue fromVec2(const Vec2& v);
-    static JsonValue fromVec3(const Vec3& v);
-    static JsonValue fromVec4(const Vec4& v);
-    static JsonValue fromMat4(const Mat4& m);
-
-    static Vec2 toVec2(const JsonValue& v);
-    static Vec3 toVec3(const JsonValue& v);
-    static Vec4 toVec4(const JsonValue& v);
-    static Mat4 toMat4(const JsonValue& v);
-
-private:
-    void serializeValue(const JsonValue& value, std::stringstream& ss, int indent = 0);
-    JsonValue parseValue(const std::string& json, size_t& pos);
-
-    // Parser helpers
-    void skipWhitespace(const std::string& json, size_t& pos);
-    JsonValue parseNull(const std::string& json, size_t& pos);
-    JsonValue parseBool(const std::string& json, size_t& pos);
-    JsonValue parseNumber(const std::string& json, size_t& pos);
-    JsonValue parseString(const std::string& json, size_t& pos);
-    JsonValue parseArray(const std::string& json, size_t& pos);
-    JsonValue parseObject(const std::string& json, size_t& pos);
+    // File I/O
+    bool saveToFile(const std::string& path, const JsonValue& value);
+    JsonValue loadFromFile(const std::string& path);
 };
 
-// Scene serialization
+// Scene serializer
+class Scene;
 class SceneSerializer {
 public:
-    SceneSerializer();
-    ~SceneSerializer();
-
-    // Save scene to file
-    bool saveScene(class Scene& scene, const std::string& filepath);
-
-    // Load scene from file
-    bool loadScene(Scene& scene, const std::string& filepath);
-
-private:
-    JsonValue serializeEntity(class Entity& entity);
-    void deserializeEntity(Scene& scene, const JsonValue& value);
-
-    Serializer m_serializer;
+    static bool saveScene(Scene& scene, const std::string& path);
+    static bool loadScene(Scene& scene, const std::string& path);
 };
 
 } // namespace spark

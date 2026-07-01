@@ -2,7 +2,7 @@
 #include "buffer.h"
 #include "mesh.h"
 #include "material.h"
-#include "vulkan/device.h"
+#include "renderer/vulkan/device.h"
 #include "core/log.h"
 #include <cstring>
 #include <algorithm>

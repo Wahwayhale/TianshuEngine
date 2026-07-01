@@ -1,4 +1,4 @@
-add_executable(SparkRuntime main.cpp)
+add_executable(SparkRuntime main_minimal.cpp)
 
 target_link_libraries(SparkRuntime PRIVATE SparkEngine)
 

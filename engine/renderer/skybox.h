@@ -1,3 +1,4 @@
+#include "vulkan/fwd.h"
 #pragma once
 
 #include "math/math_types.h"
@@ -7,7 +8,7 @@
 
 namespace spark {
 
-class Device;
+
 class Buffer;
 class Texture;
 class Shader;

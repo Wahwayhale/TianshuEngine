@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math/math_types.h"
+#include <vulkan/vulkan.h>
 #include <cstdint>
 
 namespace spark {

@@ -89,8 +89,8 @@ struct ThemeStyle {
     ImVec2 framePadding;
     ImVec2 itemSpacing;
     ImVec2 itemInnerSpacing;
-    ImVec2 scrollbarSize;
-    ImVec2 grabMinSize;
+    float scrollbarSize;
+    float grabMinSize;
 
     float indentSpacing;
     float columnsMinSpacing;
@@ -215,7 +215,7 @@ inline Theme createDarkTheme() {
     theme.style.framePadding       = ImVec2(8.0f, 4.0f);
     theme.style.itemSpacing        = ImVec2(8.0f, 6.0f);
     theme.style.itemInnerSpacing   = ImVec2(6.0f, 4.0f);
-    theme.style.scrollbarSize      = ImVec2(12.0f, 12.0f);
+    theme.style.scrollbarSize      = 12.0f;
     theme.style.grabMinSize        = 8.0f;
 
     theme.style.indentSpacing      = 20.0f;
@@ -308,7 +308,7 @@ inline Theme createLightTheme() {
     theme.style.framePadding       = ImVec2(8.0f, 4.0f);
     theme.style.itemSpacing        = ImVec2(8.0f, 6.0f);
     theme.style.itemInnerSpacing   = ImVec2(6.0f, 4.0f);
-    theme.style.scrollbarSize      = ImVec2(12.0f, 12.0f);
+    theme.style.scrollbarSize      = 12.0f;
     theme.style.grabMinSize        = 8.0f;
 
     theme.style.indentSpacing      = 20.0f;
@@ -387,8 +387,8 @@ inline void applyTheme(const Theme& theme) {
     colors[ImGuiCol_TabDimmed]             = theme.colors.tabUnfocused;
     colors[ImGuiCol_TabDimmedSelected]     = theme.colors.tabActive;
 
-    colors[ImGuiCol_DockingPreview]        = ImVec4(theme.colors.accent.x, theme.colors.accent.y, theme.colors.accent.z, 0.40f);
-    colors[ImGuiCol_DockingEmptyBg]        = theme.colors.panelBgDark;
+    colors[ImGuiCol_NavHighlight]        = ImVec4(theme.colors.accent.x, theme.colors.accent.y, theme.colors.accent.z, 0.40f);
+    colors[ImGuiCol_NavWindowingHighlight]        = theme.colors.panelBgDark;
 
     colors[ImGuiCol_Text]                  = theme.colors.text;
     colors[ImGuiCol_TextDisabled]          = theme.colors.textDisabled;
@@ -414,7 +414,7 @@ inline void applyTheme(const Theme& theme) {
     style.FramePadding       = theme.style.framePadding;
     style.ItemSpacing        = theme.style.itemSpacing;
     style.ItemInnerSpacing   = theme.style.itemInnerSpacing;
-    style.ScrollbarSize      = theme.style.scrollbarSize.x;
+    style.ScrollbarSize      = theme.style.scrollbarSize_val;
     style.GrabMinSize        = theme.style.grabMinSize;
 
     style.IndentSpacing      = theme.style.indentSpacing;

@@ -1,0 +1,69 @@
+#include "vulkan/fwd.h"
+#pragma once
+
+#include <vulkan/vulkan.h>
+#include <memory>
+#include "vulkan/instance.h"
+#include "renderer/vulkan/device.h"
+#include "vulkan/swapchain.h"
+
+struct GLFWwindow;
+
+namespace spark {
+
+class Renderer {
+public:
+    Renderer(GLFWwindow* window, int width, int height);
+    ~Renderer();
+
+    void beginFrame();
+    void endFrame();
+    void waitIdle();
+    void onResize(int width, int height);
+
+    vulkan::Device& getDevice() { return *m_device; }
+    VkRenderPass getRenderPass() const { return m_renderPass; }
+    VkCommandBuffer getCurrentCommandBuffer() const { return m_commandBuffers[m_currentFrame]; }
+    uint32_t getCurrentFrame() const { return m_currentFrame; }
+    VkExtent2D getSwapchainExtent() const { return m_swapchain->getExtent(); }
+
+private:
+    void createSurface(GLFWwindow* window);
+    void createRenderPass();
+    void createFramebuffers();
+    void createCommandPool();
+    void createCommandBuffers();
+    void createSyncObjects();
+    void createDepthResources();
+    void cleanupFramebuffers();
+    void cleanupDepthResources();
+
+    std::unique_ptr<vulkan::Instance> m_instance;
+    std::unique_ptr<vulkan::Device> m_device;
+    std::unique_ptr<vulkan::Swapchain> m_swapchain;
+
+    VkSurfaceKHR m_surface = VK_NULL_HANDLE;
+    VkRenderPass m_renderPass = VK_NULL_HANDLE;
+    VkCommandPool m_commandPool = VK_NULL_HANDLE;
+
+    std::vector<VkFramebuffer> m_framebuffers;
+    std::vector<VkCommandBuffer> m_commandBuffers;
+
+    VkImage m_depthImage = VK_NULL_HANDLE;
+    VkDeviceMemory m_depthMemory = VK_NULL_HANDLE;
+    VkImageView m_depthView = VK_NULL_HANDLE;
+
+    static const int MAX_FRAMES = 2;
+    std::vector<VkSemaphore> m_imageAvailable;
+    std::vector<VkSemaphore> m_renderFinished;
+    std::vector<VkFence> m_inFlightFences;
+
+    uint32_t m_currentFrame = 0;
+    uint32_t m_imageIndex = 0;
+    bool m_framebufferResized = false;
+
+    GLFWwindow* m_window;
+    int m_width, m_height;
+};
+
+} // namespace spark

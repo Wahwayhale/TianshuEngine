@@ -6,10 +6,9 @@
 #include <cstdint>
 #include <functional>
 #include <mutex>
+#include "renderer/vulkan/fwd.h"
 
 namespace spark {
-
-class Device;
 class Texture;
 class Mesh;
 

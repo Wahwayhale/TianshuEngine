@@ -1,12 +1,13 @@
+#include "vulkan/fwd.h"
 #pragma once
 
 #include <vulkan/vulkan.h>
 #include <string>
 #include <vector>
 
+
 namespace spark {
 
-class Device;
 
 class Shader {
 public:

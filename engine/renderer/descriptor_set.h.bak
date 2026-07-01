@@ -1,0 +1,81 @@
+#pragma once
+
+#include <vulkan/vulkan.h>
+#include <vector>
+#include <memory>
+#include "render_types.h"
+
+namespace spark::vulkan {
+class Device;
+}
+
+namespace spark {
+
+using Device = vulkan::Device;
+class Texture;
+class ShadowMap;
+class Buffer;
+
+// Uniform Buffer 类
+class UniformBuffer {
+public:
+    UniformBuffer(Device& device, VkDeviceSize size, uint32_t frameCount = 2);
+    ~UniformBuffer();
+
+    void update(uint32_t frameIndex, const void* data, VkDeviceSize size);
+    VkBuffer getBuffer(uint32_t frameIndex) const;
+    uint32_t getFrameCount() const { return static_cast<uint32_t>(m_buffers.size()); }
+
+private:
+    std::vector<std::unique_ptr<Buffer>> m_buffers;
+    VkDeviceSize m_size;
+};
+
+// 描述符集布局
+class DescriptorSetLayout {
+public:
+    DescriptorSetLayout(Device& device);
+    ~DescriptorSetLayout();
+
+    VkDescriptorSetLayout getLayout() const { return m_layout; }
+
+private:
+    Device& m_device;
+    VkDescriptorSetLayout m_layout = VK_NULL_HANDLE;
+};
+
+// 描述符池
+class DescriptorPool {
+public:
+    DescriptorPool(Device& device, uint32_t maxSets = 2);
+    ~DescriptorPool();
+
+    VkDescriptorPool getPool() const { return m_pool; }
+
+private:
+    Device& m_device;
+    VkDescriptorPool m_pool = VK_NULL_HANDLE;
+};
+
+// 描述符集
+class DescriptorSets {
+public:
+    DescriptorSets(Device& device, VkDescriptorSetLayout layout, VkDescriptorPool pool, uint32_t count);
+    ~DescriptorSets();
+
+    void bindSceneUBO(uint32_t frameIndex, UniformBuffer& ubo);
+    void bindLightUBO(uint32_t frameIndex, UniformBuffer& ubo);
+    void bindMaterialUBO(uint32_t frameIndex, UniformBuffer& ubo);
+    void bindShadowUBO(uint32_t frameIndex, UniformBuffer& ubo);
+    void bindTexture(uint32_t frameIndex, Texture& texture);
+    void bindShadowMap(uint32_t frameIndex, ShadowMap& shadowMap);
+
+    VkDescriptorSet getSet(uint32_t frameIndex) const;
+    uint32_t getCount() const { return static_cast<uint32_t>(m_sets.size()); }
+
+private:
+    Device& m_device;
+    std::vector<VkDescriptorSet> m_sets;
+};
+
+} // namespace spark

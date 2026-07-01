@@ -1,0 +1,16 @@
+{
+	"InstallScripts" : 
+	[
+		"E:/\u9879\u76ee/\u7cfb\u7edf/build/cmake_install.cmake",
+		"E:/\u9879\u76ee/\u7cfb\u7edf/build/third_party/cmake_install.cmake",
+		"E:/\u9879\u76ee/\u7cfb\u7edf/build/third_party/glfw/cmake_install.cmake",
+		"E:/\u9879\u76ee/\u7cfb\u7edf/build/third_party/glfw/src/cmake_install.cmake",
+		"E:/\u9879\u76ee/\u7cfb\u7edf/build/third_party/glm/cmake_install.cmake",
+		"E:/\u9879\u76ee/\u7cfb\u7edf/build/third_party/glm/glm/cmake_install.cmake",
+		"E:/\u9879\u76ee/\u7cfb\u7edf/build/third_party/spdlog/cmake_install.cmake",
+		"E:/\u9879\u76ee/\u7cfb\u7edf/build/engine/cmake_install.cmake",
+		"E:/\u9879\u76ee/\u7cfb\u7edf/build/runtime/cmake_install.cmake",
+		"E:/\u9879\u76ee/\u7cfb\u7edf/build/editor/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

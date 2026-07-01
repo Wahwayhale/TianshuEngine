@@ -23,7 +23,14 @@ public:
     Vec3 getGravity() const;
 
     // 射线检测
-    bool raycast(const Vec3& origin, const Vec3& direction, float maxDistance, JoltPhysicsWorld::RaycastHit& hit);
+    struct RaycastHit {
+        EntityID entity;
+        Vec3 point;
+        Vec3 normal;
+        float distance;
+    };
+
+    bool raycast(const Vec3& origin, const Vec3& direction, float maxDistance, RaycastHit& hit);
 
     // 获取物理世界
     JoltPhysicsWorld& getWorld() { return *m_world; }

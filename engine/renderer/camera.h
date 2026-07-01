@@ -18,7 +18,7 @@ public:
     void setPosition(Vec3 pos) { m_position = pos; }
     void setTarget(Vec3 target) { m_front = glm::normalize(target - m_position); updateVectors(); }
     void setFov(float fov) { m_fov = fov; }
-    void setNearFar(float near, float far) { m_nearPlane = near; m_farPlane = far; }
+    void setNearFar(float nearPlane, float farPlane) { m_nearPlane = nearPlane; m_farPlane = farPlane; }
 
     // Getters
     Vec3 getPosition() const { return m_position; }

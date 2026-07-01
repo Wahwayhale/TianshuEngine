@@ -3,7 +3,7 @@
 #include "shader.h"
 #include "pipeline.h"
 #include "texture.h"
-#include "vulkan/device.h"
+#include "renderer/vulkan/device.h"
 #include "core/log.h"
 
 namespace spark {

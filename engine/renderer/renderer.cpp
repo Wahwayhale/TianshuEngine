@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "renderer/vulkan/device.h"
 #include "core/log.h"
 #include <GLFW/glfw3.h>
 #include <stdexcept>
@@ -229,7 +230,7 @@ void Renderer::cleanupFramebuffers() {
 }
 
 void Renderer::createCommandPool() {
-    QueueFamilyIndices queueFamilyIndices = m_device->getQueueFamilyIndices();
+    vulkan::QueueFamilyIndices queueFamilyIndices = m_device->getQueueFamilyIndices();
 
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -396,6 +397,17 @@ void Renderer::onResize(int width, int height) {
     m_width = width;
     m_height = height;
     m_framebufferResized = true;
+}
+
+VkInstance Renderer::getInstance() const {
+    return m_instance ? m_instance->getInstance() : VK_NULL_HANDLE;
+}
+
+VkImageView Renderer::getSwapchainImageView(uint32_t index) const {
+    if (index < m_swapchain->getImageCount()) {
+        return m_swapchain->getImageView(index);
+    }
+    return VK_NULL_HANDLE;
 }
 
 } // namespace spark

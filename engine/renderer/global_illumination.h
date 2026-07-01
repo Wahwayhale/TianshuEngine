@@ -1,3 +1,5 @@
+#include "vulkan/fwd.h"
+#include <vulkan/vulkan.h>
 #pragma once
 
 #include <vulkan/vulkan.h>
@@ -6,7 +8,7 @@
 
 namespace spark {
 
-class Device;
+
 class Buffer;
 
 // GI 设置

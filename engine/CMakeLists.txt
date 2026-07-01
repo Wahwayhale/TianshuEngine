@@ -18,6 +18,7 @@ set(ENGINE_SOURCES
     renderer/camera.cpp
     renderer/material.cpp
     renderer/light.cpp
+    renderer/descriptor_set.cpp
 
     # ECS
     ecs/entity.cpp
@@ -51,6 +52,7 @@ set(ENGINE_SOURCES
     # UI
     ui/ui_system.cpp
     ui/widgets.cpp
+    ui/imgui_integration.cpp
 
     # Math
     math/math_types.cpp

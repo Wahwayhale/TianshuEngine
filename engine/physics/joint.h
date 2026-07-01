@@ -2,6 +2,8 @@
 
 #include "math/math_types.h"
 #include <cstdint>
+#include <memory>
+#include <vector>
 
 namespace spark {
 

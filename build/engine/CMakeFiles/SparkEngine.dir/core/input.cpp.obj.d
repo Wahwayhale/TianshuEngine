@@ -1,0 +1,50 @@
+engine/CMakeFiles/SparkEngine.dir/core/input.cpp.obj: \
+ E:/项目/系统/engine/core/input.cpp \
+ E:/项目/系统/engine/core/input.h \
+ E:/项目/系统/third_party/src/glfw/include/GLFW/glfw3.h \
+ C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/stddef.h \
+ C:/msys64/mingw64/include/stddef.h C:/msys64/mingw64/include/crtdefs.h \
+ C:/msys64/mingw64/include/corecrt.h C:/msys64/mingw64/include/_mingw.h \
+ C:/msys64/mingw64/include/_mingw_mac.h \
+ C:/msys64/mingw64/include/_mingw_secapi.h \
+ C:/msys64/mingw64/include/vadefs.h \
+ C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/stdint.h \
+ C:/msys64/mingw64/include/stdint.h C:/msys64/mingw64/include/GL/gl.h \
+ C:/msys64/mingw64/include/c++/16.1.0/array \
+ C:/msys64/mingw64/include/c++/16.1.0/compare \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/version.h \
+ C:/msys64/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/c++config.h \
+ C:/msys64/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/os_defines.h \
+ C:/msys64/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/cpu_defines.h \
+ C:/msys64/mingw64/include/c++/16.1.0/pstl/pstl_config.h \
+ C:/msys64/mingw64/include/c++/16.1.0/concepts \
+ C:/msys64/mingw64/include/c++/16.1.0/type_traits \
+ C:/msys64/mingw64/include/c++/16.1.0/initializer_list \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stdexcept_throw.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/exception_defines.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stdexcept_throwfwd.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stl_algobase.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/cpp_type_traits.h \
+ C:/msys64/mingw64/include/c++/16.1.0/ext/type_traits.h \
+ C:/msys64/mingw64/include/c++/16.1.0/ext/numeric_traits.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stl_pair.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/move.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/utility.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stl_iterator_base_types.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/iterator_concepts.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/ptr_traits.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/ranges_cmp.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stl_iterator_base_funcs.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/concept_check.h \
+ C:/msys64/mingw64/include/c++/16.1.0/debug/assertions.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stl_iterator.h \
+ C:/msys64/mingw64/include/c++/16.1.0/new \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/exception.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/new_except.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stl_construct.h \
+ C:/msys64/mingw64/include/c++/16.1.0/debug/debug.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/predefined_ops.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stl_function.h \
+ C:/msys64/mingw64/include/c++/16.1.0/backward/binders.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bit \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/range_access.h

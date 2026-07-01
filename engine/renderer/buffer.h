@@ -1,11 +1,12 @@
+#include "vulkan/fwd.h"
 #pragma once
 
 #include <vulkan/vulkan.h>
 #include <vector>
 
+
 namespace spark {
 
-class Device;
 
 class Buffer {
 public:

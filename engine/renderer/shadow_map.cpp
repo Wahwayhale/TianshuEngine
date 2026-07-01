@@ -1,5 +1,5 @@
 #include "shadow_map.h"
-#include "vulkan/device.h"
+#include "renderer/vulkan/device.h"
 #include "core/log.h"
 #include <stdexcept>
 

@@ -1,6 +1,6 @@
 #include "ssao.h"
 #include "buffer.h"
-#include "vulkan/device.h"
+#include "renderer/vulkan/device.h"
 #include "core/log.h"
 #include <random>
 #include <array>
