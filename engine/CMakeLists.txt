@@ -46,6 +46,8 @@ set(ENGINE_SOURCES
     renderer/ray_tracing.cpp
     renderer/culling.cpp
     renderer/instanced_renderer.cpp
+    renderer/shader_compiler.cpp
+    renderer/texture_manager.cpp
 
     # Resource
     resource/resource_manager.cpp
