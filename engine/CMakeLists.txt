@@ -61,6 +61,7 @@ set(ENGINE_SOURCES
     renderer/reflection_probe.cpp
     renderer/decals.cpp
     renderer/ui_renderer.cpp
+    renderer/model_loader.cpp
 
     # Resource
     resource/resource_manager.cpp

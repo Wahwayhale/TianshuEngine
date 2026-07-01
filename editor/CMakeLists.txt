@@ -6,6 +6,7 @@ set(EDITOR_SOURCES
     material_editor.cpp
     animation_editor.cpp
     scene_gizmo.cpp
+    editor_camera.cpp
 )
 
 add_executable(SparkEditor ${EDITOR_SOURCES})
