@@ -59,6 +59,8 @@ set(ENGINE_SOURCES
     renderer/light_probe.cpp
     renderer/water_renderer.cpp
     renderer/reflection_probe.cpp
+    renderer/decals.cpp
+    renderer/ui_renderer.cpp
 
     # Resource
     resource/resource_manager.cpp
