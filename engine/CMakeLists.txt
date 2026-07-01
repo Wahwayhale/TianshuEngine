@@ -54,6 +54,9 @@ set(ENGINE_SOURCES
     renderer/gpu_particles.cpp
     renderer/font_renderer.cpp
     renderer/sprite_renderer.cpp
+    renderer/deferred_renderer.cpp
+    renderer/skeletal_mesh.cpp
+    renderer/light_probe.cpp
 
     # Resource
     resource/resource_manager.cpp

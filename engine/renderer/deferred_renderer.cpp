@@ -1,17 +1,14 @@
 #include "deferred_renderer.h"
-#include "renderer/vulkan/device.h"
+#include "vulkan/device.h"
 #include "core/log.h"
 #include <array>
-#include <stdexcept>
 
 namespace spark {
 
 DeferredRenderer::DeferredRenderer(Device& device, uint32_t width, uint32_t height)
-    : m_device(device), m_extent({width, height}) {
+    : m_device(device), m_width(width), m_height(height) {
 
     createGBuffer();
-    createColorOutput();
-    createSampler();
     createRenderPasses();
     createFramebuffers();
 
@@ -25,222 +22,144 @@ DeferredRenderer::~DeferredRenderer() {
     vkDestroyFramebuffer(m_device.getDevice(), m_lightingFramebuffer, nullptr);
     vkDestroyRenderPass(m_device.getDevice(), m_geometryPass, nullptr);
     vkDestroyRenderPass(m_device.getDevice(), m_lightingPass, nullptr);
-    vkDestroySampler(m_device.getDevice(), m_sampler, nullptr);
 
     cleanupGBuffer();
-
-    vkDestroyImageView(m_device.getDevice(), m_colorOutputView, nullptr);
-    vkDestroyImage(m_device.getDevice(), m_colorOutputImage, nullptr);
-    vkFreeMemory(m_device.getDevice(), m_colorOutputMemory, nullptr);
 
     SPARK_CORE_INFO("Deferred renderer destroyed.");
 }
 
 void DeferredRenderer::recreate(uint32_t width, uint32_t height) {
     vkDeviceWaitIdle(m_device.getDevice());
-    m_extent = {width, height};
+
+    m_width = width;
+    m_height = height;
 
     vkDestroyFramebuffer(m_device.getDevice(), m_geometryFramebuffer, nullptr);
     vkDestroyFramebuffer(m_device.getDevice(), m_lightingFramebuffer, nullptr);
 
     cleanupGBuffer();
-
-    vkDestroyImageView(m_device.getDevice(), m_colorOutputView, nullptr);
-    vkDestroyImage(m_device.getDevice(), m_colorOutputImage, nullptr);
-    vkFreeMemory(m_device.getDevice(), m_colorOutputMemory, nullptr);
-
     createGBuffer();
-    createColorOutput();
     createFramebuffers();
 }
 
 void DeferredRenderer::createGBuffer() {
-    // Albedo + Metallic (RGBA8)
-    VkImageCreateInfo imageInfo{};
-    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.extent.width = m_extent.width;
-    imageInfo.extent.height = m_extent.height;
-    imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    auto createTexture = [&](GBufferTexture& tex, VkFormat format, VkImageUsageFlags usage) {
+        tex.format = format;
 
-    vkCreateImage(m_device.getDevice(), &imageInfo, nullptr, &m_gbuffer.albedoImage);
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width = m_width;
+        imageInfo.extent.height = m_height;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = format;
+        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = usage;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 
-    VkMemoryRequirements memReq;
-    vkGetImageMemoryRequirements(m_device.getDevice(), m_gbuffer.albedoImage, &memReq);
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memReq.size;
-    allocInfo.memoryTypeIndex = m_device.findMemoryType(memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkAllocateMemory(m_device.getDevice(), &allocInfo, nullptr, &m_gbuffer.albedoMemory);
-    vkBindImageMemory(m_device.getDevice(), m_gbuffer.albedoImage, m_gbuffer.albedoMemory, 0);
+        vkCreateImage(m_device.getDevice(), &imageInfo, nullptr, &tex.image);
 
-    VkImageViewCreateInfo viewInfo{};
-    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewInfo.image = m_gbuffer.albedoImage;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    viewInfo.subresourceRange.levelCount = 1;
-    viewInfo.subresourceRange.layerCount = 1;
-    vkCreateImageView(m_device.getDevice(), &viewInfo, nullptr, &m_gbuffer.albedoView);
+        VkMemoryRequirements memReq;
+        vkGetImageMemoryRequirements(m_device.getDevice(), tex.image, &memReq);
 
-    // Normal + Roughness (RGBA16F)
-    imageInfo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
-    vkCreateImage(m_device.getDevice(), &imageInfo, nullptr, &m_gbuffer.normalImage);
-    vkGetImageMemoryRequirements(m_device.getDevice(), m_gbuffer.normalImage, &memReq);
-    allocInfo.allocationSize = memReq.size;
-    allocInfo.memoryTypeIndex = m_device.findMemoryType(memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkAllocateMemory(m_device.getDevice(), &allocInfo, nullptr, &m_gbuffer.normalMemory);
-    vkBindImageMemory(m_device.getDevice(), m_gbuffer.normalImage, m_gbuffer.normalMemory, 0);
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memReq.size;
+        allocInfo.memoryTypeIndex = m_device.findMemoryType(memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    viewInfo.image = m_gbuffer.normalImage;
-    viewInfo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
-    vkCreateImageView(m_device.getDevice(), &viewInfo, nullptr, &m_gbuffer.normalView);
+        vkAllocateMemory(m_device.getDevice(), &allocInfo, nullptr, &tex.memory);
+        vkBindImageMemory(m_device.getDevice(), tex.image, tex.memory, 0);
 
-    // World Position (RGBA16F)
-    vkCreateImage(m_device.getDevice(), &imageInfo, nullptr, &m_gbuffer.positionImage);
-    vkGetImageMemoryRequirements(m_device.getDevice(), m_gbuffer.positionImage, &memReq);
-    allocInfo.allocationSize = memReq.size;
-    allocInfo.memoryTypeIndex = m_device.findMemoryType(memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkAllocateMemory(m_device.getDevice(), &allocInfo, nullptr, &m_gbuffer.positionMemory);
-    vkBindImageMemory(m_device.getDevice(), m_gbuffer.positionImage, m_gbuffer.positionMemory, 0);
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = tex.image;
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = format;
+        viewInfo.subresourceRange.aspectMask = (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ?
+                                                VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
 
-    viewInfo.image = m_gbuffer.positionImage;
-    vkCreateImageView(m_device.getDevice(), &viewInfo, nullptr, &m_gbuffer.positionView);
+        vkCreateImageView(m_device.getDevice(), &viewInfo, nullptr, &tex.view);
+    };
 
-    // Depth (D32_SFLOAT)
-    imageInfo.format = m_device.findDepthFormat();
-    imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    vkCreateImage(m_device.getDevice(), &imageInfo, nullptr, &m_gbuffer.depthImage);
-    vkGetImageMemoryRequirements(m_device.getDevice(), m_gbuffer.depthImage, &memReq);
-    allocInfo.allocationSize = memReq.size;
-    allocInfo.memoryTypeIndex = m_device.findMemoryType(memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkAllocateMemory(m_device.getDevice(), &allocInfo, nullptr, &m_gbuffer.depthMemory);
-    vkBindImageMemory(m_device.getDevice(), m_gbuffer.depthImage, m_gbuffer.depthMemory, 0);
+    // Albedo + Metallic
+    createTexture(m_albedo, VK_FORMAT_R8G8B8A8_UNORM,
+                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
 
-    viewInfo.image = m_gbuffer.depthImage;
-    viewInfo.format = m_device.findDepthFormat();
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-    vkCreateImageView(m_device.getDevice(), &viewInfo, nullptr, &m_gbuffer.depthView);
+    // Normal + Roughness
+    createTexture(m_normal, VK_FORMAT_R16G16B16A16_SFLOAT,
+                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+
+    // Position + AO
+    createTexture(m_position, VK_FORMAT_R16G16B16A16_SFLOAT,
+                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+
+    // Depth
+    createTexture(m_depth, VK_FORMAT_D32_SFLOAT,
+                  VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+
+    // Color Output
+    createTexture(m_colorOutput, VK_FORMAT_R16G16B16A16_SFLOAT,
+                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
 
     SPARK_CORE_INFO("G-Buffer created.");
 }
 
 void DeferredRenderer::cleanupGBuffer() {
-    vkDestroyImageView(m_device.getDevice(), m_gbuffer.albedoView, nullptr);
-    vkDestroyImage(m_device.getDevice(), m_gbuffer.albedoImage, nullptr);
-    vkFreeMemory(m_device.getDevice(), m_gbuffer.albedoMemory, nullptr);
+    auto cleanupTexture = [&](GBufferTexture& tex) {
+        if (tex.view != VK_NULL_HANDLE) vkDestroyImageView(m_device.getDevice(), tex.view, nullptr);
+        if (tex.image != VK_NULL_HANDLE) vkDestroyImage(m_device.getDevice(), tex.image, nullptr);
+        if (tex.memory != VK_NULL_HANDLE) vkFreeMemory(m_device.getDevice(), tex.memory, nullptr);
+    };
 
-    vkDestroyImageView(m_device.getDevice(), m_gbuffer.normalView, nullptr);
-    vkDestroyImage(m_device.getDevice(), m_gbuffer.normalImage, nullptr);
-    vkFreeMemory(m_device.getDevice(), m_gbuffer.normalMemory, nullptr);
-
-    vkDestroyImageView(m_device.getDevice(), m_gbuffer.positionView, nullptr);
-    vkDestroyImage(m_device.getDevice(), m_gbuffer.positionImage, nullptr);
-    vkFreeMemory(m_device.getDevice(), m_gbuffer.positionMemory, nullptr);
-
-    vkDestroyImageView(m_device.getDevice(), m_gbuffer.depthView, nullptr);
-    vkDestroyImage(m_device.getDevice(), m_gbuffer.depthImage, nullptr);
-    vkFreeMemory(m_device.getDevice(), m_gbuffer.depthMemory, nullptr);
-}
-
-void DeferredRenderer::createColorOutput() {
-    VkImageCreateInfo imageInfo{};
-    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.extent.width = m_extent.width;
-    imageInfo.extent.height = m_extent.height;
-    imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
-    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-
-    vkCreateImage(m_device.getDevice(), &imageInfo, nullptr, &m_colorOutputImage);
-
-    VkMemoryRequirements memReq;
-    vkGetImageMemoryRequirements(m_device.getDevice(), m_colorOutputImage, &memReq);
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memReq.size;
-    allocInfo.memoryTypeIndex = m_device.findMemoryType(memReq.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkAllocateMemory(m_device.getDevice(), &allocInfo, nullptr, &m_colorOutputMemory);
-    vkBindImageMemory(m_device.getDevice(), m_colorOutputImage, m_colorOutputMemory, 0);
-
-    VkImageViewCreateInfo viewInfo{};
-    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewInfo.image = m_colorOutputImage;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    viewInfo.subresourceRange.levelCount = 1;
-    viewInfo.subresourceRange.layerCount = 1;
-    vkCreateImageView(m_device.getDevice(), &viewInfo, nullptr, &m_colorOutputView);
-}
-
-void DeferredRenderer::createSampler() {
-    VkSamplerCreateInfo samplerInfo{};
-    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_NEAREST;
-    samplerInfo.minFilter = VK_FILTER_NEAREST;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    samplerInfo.anisotropyEnable = VK_FALSE;
-    samplerInfo.maxAnisotropy = 1.0f;
-    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-    samplerInfo.unnormalizedCoordinates = VK_FALSE;
-    samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-
-    vkCreateSampler(m_device.getDevice(), &samplerInfo, nullptr, &m_sampler);
+    cleanupTexture(m_albedo);
+    cleanupTexture(m_normal);
+    cleanupTexture(m_position);
+    cleanupTexture(m_depth);
+    cleanupTexture(m_colorOutput);
 }
 
 void DeferredRenderer::createRenderPasses() {
-    // 几何通道 (写入 G-Buffer)
-    std::array<VkAttachmentDescription, 4> attachments{};
+    // 几何通道
+    std::array<VkAttachmentDescription, 4> geometryAttachments{};
 
     // Albedo
-    attachments[0].format = VK_FORMAT_R8G8B8A8_UNORM;
-    attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[0].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    geometryAttachments[0].format = VK_FORMAT_R8G8B8A8_UNORM;
+    geometryAttachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
+    geometryAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    geometryAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    geometryAttachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    geometryAttachments[0].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     // Normal
-    attachments[1].format = VK_FORMAT_R16G16B16A16_SFLOAT;
-    attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
-    attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[1].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    geometryAttachments[1].format = VK_FORMAT_R16G16B16A16_SFLOAT;
+    geometryAttachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
+    geometryAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    geometryAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    geometryAttachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    geometryAttachments[1].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     // Position
-    attachments[2].format = VK_FORMAT_R16G16B16A16_SFLOAT;
-    attachments[2].samples = VK_SAMPLE_COUNT_1_BIT;
-    attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[2].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    geometryAttachments[2].format = VK_FORMAT_R16G16B16A16_SFLOAT;
+    geometryAttachments[2].samples = VK_SAMPLE_COUNT_1_BIT;
+    geometryAttachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    geometryAttachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    geometryAttachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    geometryAttachments[2].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     // Depth
-    attachments[3].format = m_device.findDepthFormat();
-    attachments[3].samples = VK_SAMPLE_COUNT_1_BIT;
-    attachments[3].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attachments[3].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[3].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[3].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    geometryAttachments[3].format = VK_FORMAT_D32_SFLOAT;
+    geometryAttachments[3].samples = VK_SAMPLE_COUNT_1_BIT;
+    geometryAttachments[3].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    geometryAttachments[3].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    geometryAttachments[3].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    geometryAttachments[3].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     std::array<VkAttachmentReference, 3> colorRefs{};
     colorRefs[0] = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
@@ -265,6 +184,8 @@ void DeferredRenderer::createRenderPasses() {
     dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
+    std::array<VkAttachmentDescription, 4> attachments = geometryAttachments;
+
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -276,7 +197,7 @@ void DeferredRenderer::createRenderPasses() {
 
     vkCreateRenderPass(m_device.getDevice(), &renderPassInfo, nullptr, &m_geometryPass);
 
-    // 光照通道 (读取 G-Buffer，输出最终颜色)
+    // 光照通道
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = VK_FORMAT_R16G16B16A16_SFLOAT;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -319,10 +240,10 @@ void DeferredRenderer::createRenderPasses() {
 void DeferredRenderer::createFramebuffers() {
     // 几何通道帧缓冲
     std::array<VkImageView, 4> geometryAttachments = {
-        m_gbuffer.albedoView,
-        m_gbuffer.normalView,
-        m_gbuffer.positionView,
-        m_gbuffer.depthView
+        m_albedo.view,
+        m_normal.view,
+        m_position.view,
+        m_depth.view
     };
 
     VkFramebufferCreateInfo fbInfo{};
@@ -330,14 +251,14 @@ void DeferredRenderer::createFramebuffers() {
     fbInfo.renderPass = m_geometryPass;
     fbInfo.attachmentCount = static_cast<uint32_t>(geometryAttachments.size());
     fbInfo.pAttachments = geometryAttachments.data();
-    fbInfo.width = m_extent.width;
-    fbInfo.height = m_extent.height;
+    fbInfo.width = m_width;
+    fbInfo.height = m_height;
     fbInfo.layers = 1;
 
     vkCreateFramebuffer(m_device.getDevice(), &fbInfo, nullptr, &m_geometryFramebuffer);
 
     // 光照通道帧缓冲
-    VkImageView lightingAttachment = m_colorOutputView;
+    VkImageView lightingAttachment = m_colorOutput.view;
     fbInfo.renderPass = m_lightingPass;
     fbInfo.attachmentCount = 1;
     fbInfo.pAttachments = &lightingAttachment;
