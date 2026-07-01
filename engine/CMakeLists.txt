@@ -62,6 +62,8 @@ set(ENGINE_SOURCES
     renderer/decals.cpp
     renderer/ui_renderer.cpp
     renderer/model_loader.cpp
+    renderer/ssao.cpp
+    renderer/bloom.cpp
 
     # Resource
     resource/resource_manager.cpp
