@@ -26,6 +26,7 @@ set(ENGINE_SOURCES
     # Scene
     scene/scene.cpp
     scene/transform.cpp
+    scene/scene_serializer.cpp
 
     # Physics
     physics/jolt_physics.cpp
