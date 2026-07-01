@@ -64,6 +64,8 @@ set(ENGINE_SOURCES
     renderer/model_loader.cpp
     renderer/ssao.cpp
     renderer/bloom.cpp
+    renderer/terrain_renderer.cpp
+    renderer/atmosphere.cpp
 
     # Resource
     resource/resource_manager.cpp
