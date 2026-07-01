@@ -68,6 +68,7 @@ set(ENGINE_SOURCES
     renderer/atmosphere.cpp
     renderer/cloud_renderer.cpp
     renderer/volumetric_fog.cpp
+    renderer/ocean_renderer.cpp
 
     # Resource
     resource/resource_manager.cpp
