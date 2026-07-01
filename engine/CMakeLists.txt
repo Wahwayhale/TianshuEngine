@@ -74,6 +74,7 @@ set(ENGINE_SOURCES
     renderer/glass_renderer.cpp
     renderer/vegetation_renderer.cpp
     renderer/decal_system.cpp
+    renderer/motion_blur.cpp
 
     # Resource
     resource/resource_manager.cpp
