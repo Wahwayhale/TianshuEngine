@@ -1,5 +1,7 @@
 set(EDITOR_SOURCES
     main.cpp
+    editor_commands.cpp
+    content_browser.cpp
 )
 
 add_executable(SparkEditor ${EDITOR_SOURCES})

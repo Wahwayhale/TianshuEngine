@@ -36,6 +36,7 @@ set(ENGINE_SOURCES
     physics/cloth.cpp
     physics/destruction.cpp
     physics/spatial_partition.cpp
+    physics/physics_material.cpp
 
     # Renderer Advanced
     renderer/volumetric.cpp
