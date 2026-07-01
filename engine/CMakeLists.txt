@@ -75,6 +75,7 @@ set(ENGINE_SOURCES
     renderer/vegetation_renderer.cpp
     renderer/decal_system.cpp
     renderer/motion_blur.cpp
+    renderer/depth_of_field.cpp
 
     # Resource
     resource/resource_manager.cpp
